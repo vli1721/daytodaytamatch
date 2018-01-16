@@ -63,6 +63,3 @@ models/mongod.conf
 #valerie's files
 startServer.bat
 startServer1.bat
-
-#will yao
-package.json
