@@ -7,7 +7,18 @@ var userSchema = new Schema({
     email: {type: String, unique: true, sparse: true, trim: true},
     hash: String,
     token: String,
-    
+    name: String,
+    phoneNumber: String,
+    classYear: Number,
+    house: String,
+    interests: [String],
+    classes: [String],
+    status: String,
+    flakeMeter: Number,
+    location: {
+        latitude: Number,
+        longitude: Number
+    }
   },
   {
     toObject: { getters: true },
