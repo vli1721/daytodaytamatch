@@ -16,12 +16,52 @@ exports.createUser = (req, res, next) => {
         else
             userData.email = req.body.email;
     }
+    if (!req.body.firstName) {
+            return res.status(400).send('Must provide first name')
+    }
 
+    userData.firstName = req.body.firstName
+    if (!req.body.lastName) {
+            return res.status(400).send('Must provide last name')
+    }
+    userData.lastName = req.body.lastName
     // check if password was provided
+    if (!req.body.password) {
+            return res.status(400).send('Must provide password')
+    }
+    if (!req.body.confirm) {
+            return res.status(400).send('Must provide confirm password')
+    }
+    if (req.body.confirm !== req.body.password) {
+            return res.status(400).send('Passwords must match')
+    }
     if (req.body.password)
         userData.hash = req.body.password;
+
     if (req.body.hash)
         userData.hash = req.body.hash;
+
+    // add other data
+    if (!req.body.phoneNumber) {
+            return res.status(400).send('Must provide phone number')
+    }
+    userData.phoneNumber = req.body.phoneNumber
+
+    if (!req.body.classYear) {
+            return res.status(400).send('Must provide class year')
+    }
+    userData.classYear = req.body.classYear
+    if (!req.body.house) {
+            return res.status(400).send('Must provide house')
+    }
+    userData.house = req.body.house
+
+    if (req.body.interests)
+        userData.interests = req.body.interests
+    if (req.body.classes)
+        userData.classes = req.body.classes
+
+
 
     // create new user
     const newUser = new User(userData);
