@@ -6,7 +6,8 @@ const validator = require('email-validator');
 var userSchema = new Schema({
     email: {type: String, unique: true, sparse: true, trim: true},
     hash: String,
-    token: String
+    token: String,
+    
   },
   {
     toObject: { getters: true },
