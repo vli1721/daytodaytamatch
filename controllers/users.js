@@ -38,9 +38,6 @@ exports.createUser = (req, res, next) => {
     if (req.body.password)
         userData.hash = req.body.password;
 
-    if (req.body.hash)
-        userData.hash = req.body.hash;
-
     // add other data
     if (!req.body.phoneNumber) {
             return res.status(400).send('Must provide phone number')
@@ -104,6 +101,14 @@ exports.getUserById = (req, res, next) => {
 };
 
 exports.updateUser = (req, res, next) => {
+    User.findOneAndUpdate(req.body.id, req.body).then(user => {
+        if (!user) return res.status(404).send('No user with that ID');
+        return res.sendStatus(200);
+    }).catch(next);
+};
+
+exports.updateLocation = (req, res, next) => {
+    console.log(req.body)
     User.findOneAndUpdate(req.body.id, req.body).then(user => {
         if (!user) return res.status(404).send('No user with that ID');
         return res.sendStatus(200);
