@@ -148,7 +148,19 @@ exports.findNearbyRandom = (req, res, next) => {
             { _id: { $ne: query2 } }
         ]
     }).then(users => {
-        let userIdList = users.map(user => user._id)
+        let userIdList = users.map(user => {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
+            latitude: user.latitude,
+            classYear: user.classYear,
+            house: user.house,
+            longitude: user.longitude,
+            interests: user.interests,
+            classes: user.classes,
+            status: user.status
+        })
         if (userIdList.length <= 3) {
             res.json(userIdList)
         } else {
@@ -202,7 +214,19 @@ exports.findNearbyInterests = (req, res, next) => {
             { $where: query3 }
         ]
     }).then(users => {
-        let userIdList = users.map(user => user._id)
+        let userIdList = users.map(user => {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
+            latitude: user.latitude,
+            classYear: user.classYear,
+            house: user.house,
+            longitude: user.longitude,
+            interests: user.interests,
+            classes: user.classes,
+            status: user.status
+        })
         if (userIdList.length <= 3) {
             res.json(userIdList)
         } else {
@@ -255,7 +279,19 @@ exports.findNearbyClasses = (req, res, next) => {
             { $where: query3 }
         ]
     }).then(users => {
-        let userIdList = users.map(user => user._id)
+        let userIdList = users.map(user => {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
+            latitude: user.latitude,
+            classYear: user.classYear,
+            house: user.house,
+            longitude: user.longitude,
+            interests: user.interests,
+            classes: user.classes,
+            status: user.status
+        })
         if (userIdList.length <= 3) {
             res.json(userIdList)
         } else {
@@ -308,17 +344,29 @@ exports.findNearbyStatus = (req, res, next) => {
             { status: { $eq: query3 } }
         ]
     }).then(users => {
-        let userIdList = users.map(user => user._id)
-        if (userIdList.length <= 3) {
-            res.json(userIdList)
+        let userList = users.map(user => {
+            id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
+            latitude: user.latitude,
+            classYear: user.classYear,
+            house: user.house,
+            longitude: user.longitude,
+            interests: user.interests,
+            classes: user.classes,
+            status: user.status
+        })
+        if (userList.length <= 3) {
+            res.json(userList)
         } else {
-            let retUserIdList = []
+            let retUserList = []
             for (let i = 0; i < 3; i++) {
-                let randIndex = Math.floor(Math.random() * userIdList.length)
+                let randIndex = Math.floor(Math.random() * userList.length)
                 // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
-                retUserIdList.push(userIdList.splice(randIndex, 1)[0])
+                retUserIdList.push(userList.splice(randIndex, 1)[0])
             }
-            res.json(retUserIdList)
+            res.json(retUserList)
         }
         }).catch(next)
     }).catch(next)
@@ -330,6 +378,6 @@ exports.findNearbyStatus = (req, res, next) => {
 // status: "play" - filter by *interests* or classes
 // status: "work" - filter by classes
 // status: "surprise" - other user must also have status "surprise"
-// concatenate status by string or get object from frontend
-// choose one or many users after finding (depending on what user wants to see)
+// concatenate status as string
+// choose one or many users after finding (depending on what user wants to see) - 3 users max
 // function to pass phone number to frontend
