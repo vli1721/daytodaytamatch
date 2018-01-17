@@ -12,10 +12,15 @@ const users = require('../controllers/users')
 */
 router.route('/users')
   .post(users.createUser)
-  .get(auth.validateUser, users.getUserById)
-  .put(auth.validateUser, users.updateUser)
+  .get(users.getAllUsers) //rather than get user by id
+  .put(users.updateUser) // took out validate user
   .delete(auth.validateUser, users.deleteUser)
 
+/*
+* Beta testing
+*/
+router.route('/nearby')
+	.get(users.findNearbyUsers)
 /*
 * Auth Routes
 */

@@ -61,8 +61,6 @@ exports.createUser = (req, res, next) => {
     if (req.body.classes)
         userData.classes = req.body.classes
 
-
-
     // create new user
     const newUser = new User(userData);
     newUser.save()
@@ -114,4 +112,34 @@ exports.deleteUser = (req, res, next) => {
     User.findByIdAndRemove(req.body.id)
     .then(user => res.sendStatus(200))
     .catch(next);
+}
+
+exports.findNearbyUsers = (req, res, next) => {
+    //User.createIndex({location:"2d"})
+    //User.find({location: {$near:[51,-114]}}).limit(2).then(users => res.json(users)).catch(next);
+    User.find({$where: function() { return (distance(71.0589, 42.3601, this.longitude, this.latitude) <2)}}).then(
+        users => res.json(users)).catch(next)
+}
+
+/*
+* helper functions
+*/
+
+//taken from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
+function distance(lon1, lat1, lon2, lat2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = (lat2-lat1).toRad();  // Javascript functions in radians
+  var dLon = (lon2-lon1).toRad(); 
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
+          Math.sin(dLon/2) * Math.sin(dLon/2)
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  var d = R * c; // Distance in km
+  return d * 0.621371 // distance in miles
+}
+
+/** Converts numeric degrees to radians */
+if (typeof(Number.prototype.toRad) === "undefined") {
+  Number.prototype.toRad = function() {
+    return this * Math.PI / 180;
+  }
 }
