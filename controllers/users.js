@@ -38,9 +38,6 @@ exports.createUser = (req, res, next) => {
     if (req.body.password)
         userData.hash = req.body.password;
 
-    if (req.body.hash)
-        userData.hash = req.body.hash;
-
     // add other data
     if (!req.body.phoneNumber) {
             return res.status(400).send('Must provide phone number')
@@ -108,38 +105,47 @@ exports.updateUser = (req, res, next) => {
     }).catch(next);
 };
 
+
 exports.deleteUser = (req, res, next) => {
     User.findByIdAndRemove(req.body.id)
     .then(user => res.sendStatus(200))
     .catch(next);
 }
 
-exports.findNearbyUsers = (req, res, next) => {
-    //User.createIndex({location:"2d"})
-    //User.find({location: {$near:[51,-114]}}).limit(2).then(users => res.json(users)).catch(next);
-    User.find({$where: function() { return (distance(71.0589, 42.3601, this.longitude, this.latitude) <2)}}).then(
-        users => res.json(users)).catch(next)
-}
-
 /*
-* helper functions
+* Location routes
 */
 
-//taken from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
-function distance(lon1, lat1, lon2, lat2) {
-  var R = 6371; // Radius of the earth in km
-  var dLat = (lat2-lat1).toRad();  // Javascript functions in radians
-  var dLon = (lon2-lon1).toRad(); 
-  var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * 
-          Math.sin(dLon/2) * Math.sin(dLon/2)
-  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
-  var d = R * c; // Distance in km
-  return d * 0.621371 // distance in miles
+exports.updateLocation = (req, res, next) => {
+    console.log(req.body)
+    User.findOneAndUpdate(req.body.id, req.body).then(user => {
+        if (!user) return res.status(404).send('No user with that ID');
+        return res.sendStatus(200);
+    }).catch(next);
+};
+
+exports.findNearby = (req, res, next) => {
+    User.findById(req.params.userId).then(user => {
+        if (!user) return res.status(404).send('Could not find user: invalid id');
+        return user
+    }).then((user) => {
+        let x = -71.11
+        let query = "function() {"
+        query += "let lat1 = 42.37;"
+        query += "let lon1 = " + x + ";"
+        query += "let lat2 = this.latitude;"
+        query += "let lon2 = this.longitude;"
+        query += "if (typeof(Number.prototype.toRad) === 'undefined') {"
+        query += "Number.prototype.toRad = function() {"
+        query += "return this * Math.PI / 180;}};"
+        query += "var R = 6371;"
+        query += "var dLat = (lat2-lat1).toRad();"
+        query += "var dLon = (lon2-lon1).toRad();"
+        query += "var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
+        query += "var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
+        query += "var d = R * c;"
+        query += "return d < 7; }"
+        User.find({ $where: query }).then(users => res.json(users)).catch(next)
+    }).catch(next)
 }
 
-/** Converts numeric degrees to radians */
-if (typeof(Number.prototype.toRad) === "undefined") {
-  Number.prototype.toRad = function() {
-    return this * Math.PI / 180;
-  }
-}
