@@ -28,6 +28,11 @@ router.route('/find-nearby-interests/:userId')
 
 
 /*
+* Beta testing
+*/
+router.route('/nearby')
+	.get(users.findNearbyUsers)
+/*
 * Auth Routes
 */
 router.route('/auth/login')

@@ -58,8 +58,6 @@ exports.createUser = (req, res, next) => {
     if (req.body.classes)
         userData.classes = req.body.classes
 
-
-
     // create new user
     const newUser = new User(userData);
     newUser.save()
@@ -113,7 +111,6 @@ exports.deleteUser = (req, res, next) => {
     .then(user => res.sendStatus(200))
     .catch(next);
 }
-
 
 /*
 * Location routes
@@ -202,3 +199,4 @@ exports.findNearbyInterests = (req, res, next) => {
     }).then(users => res.json(users)).catch(next)
     }).catch(next)
 }
+

@@ -11,7 +11,7 @@ The app is a simple express app with built in token authentication for users.
         - `~/mongodb/<api-name>/data/db`
         - `~/mongodb/<api-name>/logs`
     3. Update the mongo conf file in `/models/mongod.conf`. The `path` and `dbpath` variables should point to paths you just created.
-4. In a new terminal window run `npm run mongo` to start the mongodb database.
+4. In a new terminal window run `npm run mongo` to start the mongdb database.
     1. In order to later stop the mongo database run `npm run mongo-stop`.
 5. In the same window run `npm run start` to start the api.
 
