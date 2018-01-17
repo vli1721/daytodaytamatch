@@ -20,18 +20,17 @@ router.route('/update-location')
   .put(users.updateLocation)
 
 
-router.route('/find-nearby/:userId')
-  .get(users.findNearby)
+router.route('/find-nearby-random/:userId')
+  .get(users.findNearbyRandom)
 
 router.route('/find-nearby-interests/:userId')
   .get(users.findNearbyInterests)
 
+router.route('/find-nearby-classes/:userId')
+  .get(users.findNearbyClasses)
 
-/*
-* Beta testing
-*/
-router.route('/nearby')
-	.get(users.findNearbyUsers)
+
+
 /*
 * Auth Routes
 */
