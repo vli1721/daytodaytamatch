@@ -149,17 +149,19 @@ exports.findNearbyRandom = (req, res, next) => {
         ]
     }).then(users => {
         let userIdList = users.map(user => {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phoneNumber: user.phoneNumber,
-            latitude: user.latitude,
-            classYear: user.classYear,
-            house: user.house,
-            longitude: user.longitude,
-            interests: user.interests,
-            classes: user.classes,
-            status: user.status
+            return {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                latitude: user.latitude,
+                classYear: user.classYear,
+                house: user.house,
+                longitude: user.longitude,
+                interests: user.interests,
+                classes: user.classes,
+                status: user.status
+            }
         })
         if (userIdList.length <= 3) {
             res.json(userIdList)
@@ -215,17 +217,19 @@ exports.findNearbyInterests = (req, res, next) => {
         ]
     }).then(users => {
         let userIdList = users.map(user => {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phoneNumber: user.phoneNumber,
-            latitude: user.latitude,
-            classYear: user.classYear,
-            house: user.house,
-            longitude: user.longitude,
-            interests: user.interests,
-            classes: user.classes,
-            status: user.status
+            return {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                latitude: user.latitude,
+                classYear: user.classYear,
+                house: user.house,
+                longitude: user.longitude,
+                interests: user.interests,
+                classes: user.classes,
+                status: user.status
+            }
         })
         if (userIdList.length <= 3) {
             res.json(userIdList)
@@ -280,17 +284,19 @@ exports.findNearbyClasses = (req, res, next) => {
         ]
     }).then(users => {
         let userIdList = users.map(user => {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phoneNumber: user.phoneNumber,
-            latitude: user.latitude,
-            classYear: user.classYear,
-            house: user.house,
-            longitude: user.longitude,
-            interests: user.interests,
-            classes: user.classes,
-            status: user.status
+            return {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                latitude: user.latitude,
+                classYear: user.classYear,
+                house: user.house,
+                longitude: user.longitude,
+                interests: user.interests,
+                classes: user.classes,
+                status: user.status
+            }
         })
         if (userIdList.length <= 3) {
             res.json(userIdList)
@@ -345,17 +351,19 @@ exports.findNearbyStatus = (req, res, next) => {
         ]
     }).then(users => {
         let userList = users.map(user => {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phoneNumber: user.phoneNumber,
-            latitude: user.latitude,
-            classYear: user.classYear,
-            house: user.house,
-            longitude: user.longitude,
-            interests: user.interests,
-            classes: user.classes,
-            status: user.status
+            return {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phoneNumber: user.phoneNumber,
+                latitude: user.latitude,
+                classYear: user.classYear,
+                house: user.house,
+                longitude: user.longitude,
+                interests: user.interests,
+                classes: user.classes,
+                status: user.status
+            }
         })
         if (userList.length <= 3) {
             res.json(userList)
