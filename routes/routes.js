@@ -17,21 +17,22 @@ router.route('/users')
   .delete(users.deleteUser)
 
 router.route('/update-location')
-  .put(users.updateLocation)
+  .put(users.updateUser)
 
 
-router.route('/find-nearby/:userId')
-  .get(users.findNearby)
+router.route('/find-nearby-random')
+  .put(users.findNearbyRandom)
 
-router.route('/find-nearby-interests/:userId')
-  .get(users.findNearbyInterests)
+router.route('/find-nearby-interests')
+  .put(users.findNearbyInterests)
+
+router.route('/find-nearby-classes')
+  .put(users.findNearbyClasses)
+
+router.route('/find-nearby-status')
+  .put(users.findNearbyStatus)
 
 
-/*
-* Beta testing
-*/
-router.route('/nearby')
-	.get(users.findNearbyUsers)
 /*
 * Auth Routes
 */
