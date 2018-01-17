@@ -101,7 +101,7 @@ exports.getUserById = (req, res, next) => {
 };
 
 exports.updateUser = (req, res, next) => {
-    User.findOneAndUpdate(req.body.id, req.body).then(user => {
+    User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
         if (!user) return res.status(404).send('No user with that ID');
         return res.sendStatus(200);
     }).catch(next);
@@ -120,8 +120,10 @@ exports.deleteUser = (req, res, next) => {
 */
 
 exports.updateLocation = (req, res, next) => {
-    console.log(req.body)
-    User.findOneAndUpdate(req.body.id, req.body).then(user => {
+    User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
+        console.log(req.body.id)
+        console.log(req.body.latitude)
+        console.log(req.body.longitude)
         if (!user) return res.status(404).send('No user with that ID');
         return res.sendStatus(200);
     }).catch(next);
@@ -132,22 +134,71 @@ exports.findNearby = (req, res, next) => {
         if (!user) return res.status(404).send('Could not find user: invalid id');
         return user
     }).then((user) => {
-        let x = -71.11
-        let query = "function() {"
-        query += "let lat1 = 42.37;"
-        query += "let lon1 = " + x + ";"
-        query += "let lat2 = this.latitude;"
-        query += "let lon2 = this.longitude;"
-        query += "if (typeof(Number.prototype.toRad) === 'undefined') {"
-        query += "Number.prototype.toRad = function() {"
-        query += "return this * Math.PI / 180;}};"
-        query += "var R = 6371;"
-        query += "var dLat = (lat2-lat1).toRad();"
-        query += "var dLon = (lon2-lon1).toRad();"
-        query += "var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
-        query += "var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
-        query += "var d = R * c;"
-        query += "return d < 7; }"
-        User.find({ $where: query }).then(users => res.json(users)).catch(next)
+        // query1 finds users within 1.6 km (about 1 miles) of target user
+        // function adapted from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
+        let query1 = "function() {"
+        query1 += "let lat1 = " + (user.latitude || 10000) + ";"
+        query1 += "let lon1 = " + (user.longitude || 10000) + ";"
+        query1 += "let lat2 = this.latitude || 10000;"
+        query1 += "let lon2 = this.longitude || 10000;"
+        query1 += "if (typeof(Number.prototype.toRad) === 'undefined') {"
+        query1 += "Number.prototype.toRad = function() {"
+        query1 += "return this * Math.PI / 180;}};"
+        query1 += "var R = 6371;"
+        query1 += "var dLat = (lat2-lat1).toRad();"
+        query1 += "var dLon = (lon2-lon1).toRad();"
+        query1 += "var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
+        query1 += "var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
+        query1 += "var d = R * c;"
+        query1 += "return d < 1.6; }"
+
+        // query2 ensures that the target user does not find himself/herself
+        let query2 = "" + user._id
+
+        User.find({ $and: [
+            { $where: query1 },
+            { _id: { $ne: query2 } }
+        ]
+    }).then(users => res.json(users)).catch(next)
+    }).catch(next)
+}
+
+
+exports.findNearbyInterests = (req, res, next) => {
+    User.findById(req.params.userId).then(user => {
+        if (!user) return res.status(404).send('Could not find user: invalid id');
+        return user
+    }).then((user) => {
+        // query1 finds users within 1.6 km (about 1 miles) of target user
+        // function adapted from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
+        let query1 = "function() {"
+        query1 += "let lat1 = " + (user.latitude || 10000) + ";"
+        query1 += "let lon1 = " + (user.longitude || 10000) + ";"
+        query1 += "let lat2 = this.latitude || 10000;"
+        query1 += "let lon2 = this.longitude || 10000;"
+        query1 += "if (typeof(Number.prototype.toRad) === 'undefined') {"
+        query1 += "Number.prototype.toRad = function() {"
+        query1 += "return this * Math.PI / 180;}};"
+        query1 += "var R = 6371;"
+        query1 += "var dLat = (lat2-lat1).toRad();"
+        query1 += "var dLon = (lon2-lon1).toRad();"
+        query1 += "var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
+        query1 += "var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
+        query1 += "var d = R * c;"
+        query1 += "return d < 1.6; }"
+
+        // query2 ensures that the target user does not find himself/herself
+        let query2 = "" + user._id
+
+        // query3 finds nearby users that have at least one common interest
+        let query3 = "function () {"
+        query3 += "return (('" + user.interests  + "'.split(',')).filter( " + "(element) => this.interests.includes(element) ) ).length > 0 }"
+
+        User.find({ $and: [
+            { $where: query1 },
+            { _id: { $ne: query2 } },
+            { $where: query3 }
+        ]
+    }).then(users => res.json(users)).catch(next)
     }).catch(next)
 }
