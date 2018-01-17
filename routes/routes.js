@@ -17,18 +17,20 @@ router.route('/users')
   .delete(users.deleteUser)
 
 router.route('/update-location')
-  .put(users.updateLocation)
+  .put(users.updateUser)
 
 
-router.route('/find-nearby-random/:userId')
-  .get(users.findNearbyRandom)
+router.route('/find-nearby-random')
+  .put(users.findNearbyRandom)
 
-router.route('/find-nearby-interests/:userId')
-  .get(users.findNearbyInterests)
+router.route('/find-nearby-interests')
+  .put(users.findNearbyInterests)
 
-router.route('/find-nearby-classes/:userId')
-  .get(users.findNearbyClasses)
+router.route('/find-nearby-classes')
+  .put(users.findNearbyClasses)
 
+router.route('/find-nearby-status')
+  .put(users.findNearbyStatus)
 
 
 /*
