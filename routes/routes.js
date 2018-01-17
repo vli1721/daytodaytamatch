@@ -19,6 +19,8 @@ router.route('/users')
 router.route('/update-location')
   .put(users.updateLocation)
 
+router.route('/find-nearby/:userId')
+.get(users.findNearby)
 
 /*
 * Auth Routes

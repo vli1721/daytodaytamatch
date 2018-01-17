@@ -107,6 +107,18 @@ exports.updateUser = (req, res, next) => {
     }).catch(next);
 };
 
+
+exports.deleteUser = (req, res, next) => {
+    User.findByIdAndRemove(req.body.id)
+    .then(user => res.sendStatus(200))
+    .catch(next);
+}
+
+
+/*
+* Location routes
+*/
+
 exports.updateLocation = (req, res, next) => {
     console.log(req.body)
     User.findOneAndUpdate(req.body.id, req.body).then(user => {
@@ -115,8 +127,27 @@ exports.updateLocation = (req, res, next) => {
     }).catch(next);
 };
 
-exports.deleteUser = (req, res, next) => {
-    User.findByIdAndRemove(req.body.id)
-    .then(user => res.sendStatus(200))
-    .catch(next);
+exports.findNearby = (req, res, next) => {
+    User.findById(req.params.userId).then(user => {
+        if (!user) return res.status(404).send('Could not find user: invalid id');
+        return user
+    }).then((user) => {
+        let x = -71.11
+        let query = "function() {"
+        query += "let lat1 = 42.37;"
+        query += "let lon1 = " + x + ";"
+        query += "let lat2 = this.latitude;"
+        query += "let lon2 = this.longitude;"
+        query += "if (typeof(Number.prototype.toRad) === 'undefined') {"
+        query += "Number.prototype.toRad = function() {"
+        query += "return this * Math.PI / 180;}};"
+        query += "var R = 6371;"
+        query += "var dLat = (lat2-lat1).toRad();"
+        query += "var dLon = (lon2-lon1).toRad();"
+        query += "var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
+        query += "var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
+        query += "var d = R * c;"
+        query += "return d < 7; }"
+        User.find({ $where: query }).then(users => res.json(users)).catch(next)
+    }).catch(next)
 }
