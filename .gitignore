@@ -63,3 +63,5 @@ models/mongod.conf
 #valerie's files
 startServer.bat
 startServer1.bat
+
+.mongo_pid
