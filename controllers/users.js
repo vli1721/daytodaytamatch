@@ -2,68 +2,43 @@ const User = require('../models/schemas/user');
 const config = require('../models/config');
 const jwt = require('jwt-simple')
 
-/*
-* C.R.U.D. routes
-*/
+
+/*=============================================
+=                C.R.U.D. routes              =
+=============================================*/
 exports.createUser = (req, res, next) => {
 
-    const userData = {};
-    // validate email
-    // http://emailregex.com
-    if (req.body.email) {
-        if (!(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(req.body.email)))
-            return res.status(400).send('Invalid email');
-        else
-            userData.email = req.body.email;
+    // validate email (from http://emailregex.com)
+    if (!(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(req.body.email))) {
+        return res.status(400).send('Invalid email');
     }
-    if (!req.body.firstName) {
-            return res.status(400).send('Must provide first name')
-    }
+    if (!req.body.firstName) return res.status(400).send('Must provide first name')
+    if (!req.body.lastName) return res.status(400).send('Must provide last name')
+    if (!req.body.password) return res.status(400).send('Must provide password')
+    if (!req.body.confirm) return res.status(400).send('Must provide confirm password')
+    if (req.body.confirm !== req.body.password) return res.status(400).send('Passwords must match')
+    if (!req.body.phoneNumber) return res.status(400).send('Must provide phone number')
+    if (!req.body.classYear) return res.status(400).send('Must provide class year')
+    if (!req.body.house) return res.status(400).send('Must provide house')
 
-    userData.firstName = req.body.firstName
-    if (!req.body.lastName) {
-            return res.status(400).send('Must provide last name')
+    const userData = {
+        userData.email = req.body.email,
+        userData.firstName = req.body.firstName,
+        userData.lastName = req.body.lastName,
+        userData.hash = req.body.password,
+        userData.phoneNumber = req.body.phoneNumber,
+        userData.classYear = req.body.classYear,
+        userData.house = req.body.house
+        userData.interests = req.body.interests || [],
+        userData.classes = req.body.classes || [],
+        userData.status = 'unavailable'
     }
-    userData.lastName = req.body.lastName
-    // check if password was provided
-    if (!req.body.password) {
-            return res.status(400).send('Must provide password')
-    }
-    if (!req.body.confirm) {
-            return res.status(400).send('Must provide confirm password')
-    }
-    if (req.body.confirm !== req.body.password) {
-            return res.status(400).send('Passwords must match')
-    }
-    if (req.body.password)
-        userData.hash = req.body.password;
-
-    // add other data
-    if (!req.body.phoneNumber) {
-            return res.status(400).send('Must provide phone number')
-    }
-    userData.phoneNumber = req.body.phoneNumber
-
-    if (!req.body.classYear) {
-            return res.status(400).send('Must provide class year')
-    }
-    userData.classYear = req.body.classYear
-    if (!req.body.house) {
-            return res.status(400).send('Must provide house')
-    }
-    userData.house = req.body.house
-
-    if (req.body.interests)
-        userData.interests = req.body.interests
-    if (req.body.classes)
-        userData.classes = req.body.classes
 
     // create new user
     const newUser = new User(userData);
     newUser.save()
     .then(user => {
         if (!user) return res.status(500).send('User failed to create')
-
         let payload = {
             id: user._id,
             email: user.email
@@ -112,11 +87,10 @@ exports.deleteUser = (req, res, next) => {
     .catch(next);
 }
 
-/*
-* Location routes
-*/
 
-
+/*=============================================
+=              Location routes                =
+=============================================*/
 exports.findNearby = (req, res, next) => {
     // update status of target user
     User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
@@ -165,32 +139,64 @@ exports.findNearby = (req, res, next) => {
             { $where: query4 }
         ]
     }).then(users => {
-        let userIdList = users.map(user => {
+        let userLat = user.latitude
+        let userLon = user.longitude
+        let userMatchList = users.map(userMatch => {
             return {
-                id: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                phoneNumber: user.phoneNumber,
-                latitude: user.latitude,
-                classYear: user.classYear,
-                house: user.house,
-                longitude: user.longitude,
-                interests: user.interests,
-                classes: user.classes,
-                status: user.status
+                id: userMatch._id,
+                firstName: userMatch.firstName,
+                lastName: userMatch.lastName,
+                phoneNumber: userMatch.phoneNumber,
+                latitude: userMatch.latitude,
+                classYear: userMatch.classYear,
+                house: userMatch.house,
+                longitude: userMatch.longitude,
+                interests: userMatch.interests,
+                classes: userMatch.classes,
+                status: userMatch.status
             }
         })
-        if (userIdList.length <= 3) {
-            res.json(userIdList)
-        } else {
-            let retUserIdList = []
-            for (let i = 0; i < 3; i++) {
-                let randIndex = Math.floor(Math.random() * userIdList.length)
-                // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
-                retUserIdList.push(userIdList.splice(randIndex, 1)[0])
+        if (userMatchList.length <= 3) {
+            for (let i = 0; i < userMatchList.length; i++) {
+                userMatchList[i].distance = distance(userLon, userLat, userMatchList[i].longitude, userMatchList[i].latitude)
+                delete userMatchList[i].latitude
+                delete userMatchList[i].longitude
             }
-            res.json(retUserIdList)
+            res.json(userMatchList)
+        } else {
+            let retUserMatchList = []
+            for (let i = 0; i < 3; i++) {
+                let randIndex = Math.floor(Math.random() * userMatchList.length)
+                // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
+                retUserMatchList.push(userMatchList.splice(randIndex, 1)[0])
+            }
+            for (let i = 0; i < retUserMatchList.length; i++) {
+                retUserMatchList[i].distance = distance(userLon, userLat, retUserMatchList[i].longitude, retUserMatchList[i].latitude)
+                delete retUserMatchList[i].latitude
+                delete retUserMatchList[i].longitude
+            }
+            res.json(retUserMatchList)
         }
         }).catch(next)
     }).catch(next)
+}
+
+// Helper function to calculate distance between two users, given latitude and longitude of each
+// From https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
+function distance(lon1, lat1, lon2, lat2) {
+    /** Converts numeric degrees to radians */
+    if (typeof(Number.prototype.toRad) === "undefined") {
+        Number.prototype.toRad = function() {
+            return this * Math.PI / 180;
+      }
+    }
+    var R = 6371; // Radius of the earth in km
+    var dLat = (lat2-lat1).toRad();  // Javascript functions in radians
+    var dLon = (lon2-lon1).toRad();
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c; // Distance in km
+    return d;
 }
