@@ -15,7 +15,6 @@ var userSchema = new Schema({
     interests: [String],
     classes: [String],
     status: String,
-    flakeMeter: Number,
     latitude: Number,
     longitude: Number
   },
