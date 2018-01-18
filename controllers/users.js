@@ -22,16 +22,16 @@ exports.createUser = (req, res, next) => {
     if (!req.body.house) return res.status(400).send('Must provide house')
 
     const userData = {
-        userData.email = req.body.email,
-        userData.firstName = req.body.firstName,
-        userData.lastName = req.body.lastName,
-        userData.hash = req.body.password,
-        userData.phoneNumber = req.body.phoneNumber,
-        userData.classYear = req.body.classYear,
-        userData.house = req.body.house
-        userData.interests = req.body.interests || [],
-        userData.classes = req.body.classes || [],
-        userData.status = 'unavailable'
+        email: req.body.email,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        hash: req.body.password,
+        phoneNumber: req.body.phoneNumber,
+        classYear: req.body.classYear,
+        house: req.body.house,
+        interests: req.body.interests || [],
+        classes: req.body.classes || [],
+        status: 'unavailable'
     }
 
     // create new user
