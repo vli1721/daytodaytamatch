@@ -30,5 +30,8 @@ router.route('/find-nearby')
 router.route('/auth/login')
   .post(auth.loginUser);
 
+router.route('/auth/logoff')
+	.post(auth.logoffUser)
+
 // expose routes through router object
 module.exports = router;
