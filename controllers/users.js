@@ -116,13 +116,14 @@ exports.deleteUser = (req, res, next) => {
 * Location routes
 */
 
-exports.findNearbyRandom = (req, res, next) => {
+
+exports.findNearby = (req, res, next) => {
     // update status of target user
     User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
         if (!user) return res.status(404).send('Could not find user: invalid id');
         return user
     }).then((user) => {
-        // query1 finds users within 1.6 km (about 1 miles) of target user
+        // query1 finds users within 0.8 km (about 0.5 miles) of target user
         // function adapted from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
         let query1 = "function() {"
         query1 += "let lat1 = " + (user.latitude || 10000) + ";"
@@ -138,205 +139,7 @@ exports.findNearbyRandom = (req, res, next) => {
         query1 += "let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
         query1 += "let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
         query1 += "let d = R * c;"
-        query1 += "return d < 1.6; }"
-
-        // query2 ensures that the target user does not find himself/herself
-        let query2 = "" + user._id
-
-        User.find({ $and: [
-            { $where: query1 },
-            { _id: { $ne: query2 } }
-        ]
-    }).then(users => {
-        let userIdList = users.map(user => {
-            return {
-                id: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                phoneNumber: user.phoneNumber,
-                latitude: user.latitude,
-                classYear: user.classYear,
-                house: user.house,
-                longitude: user.longitude,
-                interests: user.interests,
-                classes: user.classes,
-                status: user.status
-            }
-        })
-        if (userIdList.length <= 3) {
-            res.json(userIdList)
-        } else {
-            let retUserIdList = []
-            for (let i = 0; i < 3; i++) {
-                let randIndex = Math.floor(Math.random() * userIdList.length)
-                // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
-                retUserIdList.push(userIdList.splice(randIndex, 1)[0])
-            }
-            res.json(retUserIdList)
-        }
-        }).catch(next)
-    }).catch(next)
-}
-
-
-exports.findNearbyInterests = (req, res, next) => {
-    // update status of target user
-    User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
-        if (!user) return res.status(404).send('Could not find user: invalid id');
-        return user
-    }).then((user) => {
-        // query1 finds users within 1.6 km (about 1 miles) of target user
-        // function adapted from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
-        let query1 = "function() {"
-        query1 += "let lat1 = " + (user.latitude || 10000) + ";"
-        query1 += "let lon1 = " + (user.longitude || 10000) + ";"
-        query1 += "let lat2 = this.latitude || 10000;"
-        query1 += "let lon2 = this.longitude || 10000;"
-        query1 += "if (typeof(Number.prototype.toRad) === 'undefined') {"
-        query1 += "Number.prototype.toRad = function() {"
-        query1 += "return this * Math.PI / 180;}};"
-        query1 += "let R = 6371;"
-        query1 += "let dLat = (lat2-lat1).toRad();"
-        query1 += "let dLon = (lon2-lon1).toRad();"
-        query1 += "let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
-        query1 += "let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
-        query1 += "let d = R * c;"
-        query1 += "return d < 1.6; }"
-
-        // query2 ensures that the target user does not find himself/herself
-        let query2 = "" + user._id
-
-        // query3 finds nearby users that have at least one common interest
-        let query3 = "function () {"
-        query3 += "return (('" + user.interests  + "'.split(',')).filter( " + "(element) => this.interests.includes(element) ) ).length > 0 }"
-
-        User.find({ $and: [
-            { $where: query1 },
-            { _id: { $ne: query2 } },
-            { $where: query3 }
-        ]
-    }).then(users => {
-        let userIdList = users.map(user => {
-            return {
-                id: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                phoneNumber: user.phoneNumber,
-                latitude: user.latitude,
-                classYear: user.classYear,
-                house: user.house,
-                longitude: user.longitude,
-                interests: user.interests,
-                classes: user.classes,
-                status: user.status
-            }
-        })
-        if (userIdList.length <= 3) {
-            res.json(userIdList)
-        } else {
-            let retUserIdList = []
-            for (let i = 0; i < 3; i++) {
-                let randIndex = Math.floor(Math.random() * userIdList.length)
-                // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
-                retUserIdList.push(userIdList.splice(randIndex, 1)[0])
-            }
-            res.json(retUserIdList)
-        }
-        }).catch(next)
-    }).catch(next)
-}
-
-exports.findNearbyClasses = (req, res, next) => {
-    // update status of target user
-    User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
-        if (!user) return res.status(404).send('Could not find user: invalid id');
-        return user
-    }).then((user) => {
-        // query1 finds users within 1.6 km (about 1 miles) of target user
-        // function adapted from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
-        let query1 = "function() {"
-        query1 += "let lat1 = " + (user.latitude || 10000) + ";"
-        query1 += "let lon1 = " + (user.longitude || 10000) + ";"
-        query1 += "let lat2 = this.latitude || 10000;"
-        query1 += "let lon2 = this.longitude || 10000;"
-        query1 += "if (typeof(Number.prototype.toRad) === 'undefined') {"
-        query1 += "Number.prototype.toRad = function() {"
-        query1 += "return this * Math.PI / 180;}};"
-        query1 += "let R = 6371;"
-        query1 += "let dLat = (lat2-lat1).toRad();"
-        query1 += "let dLon = (lon2-lon1).toRad();"
-        query1 += "let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
-        query1 += "let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
-        query1 += "let d = R * c;"
-        query1 += "return d < 1.6; }"
-
-        // query2 ensures that the target user does not find himself/herself
-        let query2 = "" + user._id
-
-        // query3 finds nearby users that have at least one common class
-        let query3 = "function () {"
-        query3 += "return (('" + user.classes  + "'.split(',')).filter( " + "(element) => this.classes.includes(element) ) ).length > 0 }"
-
-        User.find({ $and: [
-            { $where: query1 },
-            { _id: { $ne: query2 } },
-            { $where: query3 }
-        ]
-    }).then(users => {
-        let userIdList = users.map(user => {
-            return {
-                id: user._id,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                phoneNumber: user.phoneNumber,
-                latitude: user.latitude,
-                classYear: user.classYear,
-                house: user.house,
-                longitude: user.longitude,
-                interests: user.interests,
-                classes: user.classes,
-                status: user.status
-            }
-        })
-        if (userIdList.length <= 3) {
-            res.json(userIdList)
-        } else {
-            let retUserIdList = []
-            for (let i = 0; i < 3; i++) {
-                let randIndex = Math.floor(Math.random() * userIdList.length)
-                // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
-                retUserIdList.push(userIdList.splice(randIndex, 1)[0])
-            }
-            res.json(retUserIdList)
-        }
-        }).catch(next)
-    }).catch(next)
-}
-
-
-exports.findNearbyStatus = (req, res, next) => {
-    // update status of target user
-    User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
-        if (!user) return res.status(404).send('Could not find user: invalid id');
-        return user
-    }).then((user) => {
-        // query1 finds users within 1.6 km (about 1 miles) of target user
-        // function adapted from https://stackoverflow.com/questions/13840516/how-to-find-my-distance-to-a-known-location-in-javascript
-        let query1 = "function() {"
-        query1 += "let lat1 = " + (user.latitude || 10000) + ";"
-        query1 += "let lon1 = " + (user.longitude || 10000) + ";"
-        query1 += "let lat2 = this.latitude || 10000;"
-        query1 += "let lon2 = this.longitude || 10000;"
-        query1 += "if (typeof(Number.prototype.toRad) === 'undefined') {"
-        query1 += "Number.prototype.toRad = function() {"
-        query1 += "return this * Math.PI / 180;}};"
-        query1 += "let R = 6371;"
-        query1 += "let dLat = (lat2-lat1).toRad();"
-        query1 += "let dLon = (lon2-lon1).toRad();"
-        query1 += "let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) *Math.sin(dLon/2) * Math.sin(dLon/2);"
-        query1 += "let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));"
-        query1 += "let d = R * c;"
-        query1 += "return d < 1.6; }"
+        query1 += "return d < 0.8; }"
 
         // query2 ensures that the target user does not find himself/herself
         let query2 = "" + user._id
@@ -344,13 +147,25 @@ exports.findNearbyStatus = (req, res, next) => {
         // query3 finds users with same status as target user
         let query3 = ("" + req.body.status) || "unavailable"
 
+        // if status is exactly "work", query4 finds nearby users that have at least one common class
+        let query4
+        if (String(req.body.status) === "work") {
+            query4 = "function () { return (('" + user.classes  + "'.split(',')).filter( " + "(element) => this.classes.includes(element) ) ).length > 0 }"
+        } // else if status is exactly "eat" or exactly "play", query4 finds nearby users that have at least one common interest
+        else if (String(req.body.status) === "eat" || String(req.body.status) === "play") {
+            query4 = "function () { return (('" + user.interests  + "'.split(',')).filter( " + "(element) => this.interests.includes(element) ) ).length > 0 }"
+        } // else make query4 true
+        else {
+            query4 = "true"
+        }
         User.find({ $and: [
             { $where: query1 },
             { _id: { $ne: query2 } },
-            { status: { $eq: query3 } }
+            { status: { $eq: query3 } },
+            { $where: query4 }
         ]
     }).then(users => {
-        let userList = users.map(user => {
+        let userIdList = users.map(user => {
             return {
                 id: user._id,
                 firstName: user.firstName,
@@ -365,27 +180,17 @@ exports.findNearbyStatus = (req, res, next) => {
                 status: user.status
             }
         })
-        if (userList.length <= 3) {
-            res.json(userList)
+        if (userIdList.length <= 3) {
+            res.json(userIdList)
         } else {
-            let retUserList = []
+            let retUserIdList = []
             for (let i = 0; i < 3; i++) {
-                let randIndex = Math.floor(Math.random() * userList.length)
+                let randIndex = Math.floor(Math.random() * userIdList.length)
                 // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
-                retUserIdList.push(userList.splice(randIndex, 1)[0])
+                retUserIdList.push(userIdList.splice(randIndex, 1)[0])
             }
-            res.json(retUserList)
+            res.json(retUserIdList)
         }
         }).catch(next)
     }).catch(next)
 }
-
-// TODO
-// find nearby users by status ("work", "eat", "play", "random"/"surprise") - based on location
-// status: "eat" - filter by *interests* or classes
-// status: "play" - filter by *interests* or classes
-// status: "work" - filter by classes
-// status: "surprise" - other user must also have status "surprise"
-// concatenate status as string
-// choose one or many users after finding (depending on what user wants to see) - 3 users max
-// function to pass phone number to frontend
