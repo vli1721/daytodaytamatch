@@ -32,6 +32,13 @@ exports.loginUser = (req, res, next) => {
     });
 };
 
+exports.logoffUser = (req, res, next) => {
+    User.findOneAndUpdate({ _id: req.body.id }, {status: "unavailable"}).then(user => {
+        if (!user) return res.status(404).send('No user with that ID');
+        return res.sendStatus(200);
+    }).catch(next);
+};
+
 exports.validateUser = (req, res, next) => {
     validateToken(req, res, next, {});
 };
