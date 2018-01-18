@@ -31,7 +31,8 @@ exports.createUser = (req, res, next) => {
         house: req.body.house,
         interests: req.body.interests || [],
         classes: req.body.classes || [],
-        status: 'unavailable'
+        status: 'unavailable',
+        matches: []
     }
 
     // create new user
@@ -153,30 +154,38 @@ exports.findNearby = (req, res, next) => {
                 longitude: userMatch.longitude,
                 interests: userMatch.interests,
                 classes: userMatch.classes,
-                status: userMatch.status
+                status: userMatch.status,
+                matches: userMatch.matches
             }
         })
+        let retUserMatchList = []
         if (userMatchList.length <= 3) {
             for (let i = 0; i < userMatchList.length; i++) {
-                userMatchList[i].distance = distance(userLon, userLat, userMatchList[i].longitude, userMatchList[i].latitude)
-                delete userMatchList[i].latitude
-                delete userMatchList[i].longitude
+                retUserMatchList.push(userMatchList[i])
             }
-            res.json(userMatchList)
         } else {
-            let retUserMatchList = []
             for (let i = 0; i < 3; i++) {
                 let randIndex = Math.floor(Math.random() * userMatchList.length)
                 // delete random userId from original array and add it to the return array (deletion prevents repeated elements)
                 retUserMatchList.push(userMatchList.splice(randIndex, 1)[0])
             }
-            for (let i = 0; i < retUserMatchList.length; i++) {
-                retUserMatchList[i].distance = distance(userLon, userLat, retUserMatchList[i].longitude, retUserMatchList[i].latitude)
-                delete retUserMatchList[i].latitude
-                delete retUserMatchList[i].longitude
-            }
-            res.json(retUserMatchList)
         }
+        let promises = []
+        for (let i = 0; i < retUserMatchList.length; i++) {
+            if (!user.matches.includes(retUserMatchList[i].id)) {
+                promises.push(User.findOneAndUpdate({ _id: user._id }, { $push: { matches: retUserMatchList[i].id } }))
+            }
+            if (!retUserMatchList[i].matches.includes(user._id)) {
+                promises.push(User.findOneAndUpdate({ _id: retUserMatchList[i].id }, { $push: { matches: user._id } }))
+            }
+            retUserMatchList[i].distance = distance(userLon, userLat, retUserMatchList[i].longitude, retUserMatchList[i].latitude)
+            delete retUserMatchList[i].latitude
+            delete retUserMatchList[i].longitude
+        }
+        Promise.all(promises).then(results => {
+            res.json(retUserMatchList)
+            }).catch(next)
+
         }).catch(next)
     }).catch(next)
 }

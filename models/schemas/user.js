@@ -16,7 +16,8 @@ var userSchema = new Schema({
     classes: [String],
     status: String,
     latitude: Number,
-    longitude: Number
+    longitude: Number,
+    matches: [String]
   },
   {
     toObject: { getters: true },
