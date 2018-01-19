@@ -100,7 +100,7 @@ exports.clearMatches = (req, res, next) => {
 =              Location routes                =
 =============================================*/
 exports.findNearby = (req, res, next) => {
-    // update status of target user
+    // update status and location of target user
     User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
         if (!user) return res.status(404).send('Could not find user: invalid id');
         return user

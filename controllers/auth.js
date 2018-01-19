@@ -26,7 +26,16 @@ exports.loginUser = (req, res, next) => {
             user.token = token;
             user.save((err) => {
                 if (err) return next(err);
-                res.json({ token, userId: user._id });
+                res.json({
+                    token,
+                    userId: user._id,
+                    classes: user.classes,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    phoneNumber: user.phoneNumber,
+                    classYear: user.classYear,
+                    house: user.house
+                 });
             });
         });
     });
