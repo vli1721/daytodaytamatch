@@ -88,6 +88,13 @@ exports.deleteUser = (req, res, next) => {
     .catch(next);
 }
 
+exports.clearMatches = (req, res, next) => {
+    User.findOneAndUpdate({ _id: req.body.id }, { matches: []}).then(user => {
+        if (!user) return res.status(404).send('Could not find user: invalid id');
+        next()
+    })
+}
+
 
 /*=============================================
 =              Location routes                =
@@ -120,7 +127,7 @@ exports.findNearby = (req, res, next) => {
         let query2 = "" + user._id
 
         // query3 finds users with same status as target user
-        let query3 = ("" + req.body.status) || "unavailable"
+        let query3 = "function () { return this.status.indexOf('" + req.body.status + "') >= 0 }"
 
         // if status is exactly "work", query4 finds nearby users that have at least one common class
         let query4
@@ -136,7 +143,7 @@ exports.findNearby = (req, res, next) => {
         User.find({ $and: [
             { $where: query1 },
             { _id: { $ne: query2 } },
-            { status: { $eq: query3 } },
+            { $where: query3 },
             { $where: query4 }
         ]
     }).then(users => {
@@ -172,10 +179,10 @@ exports.findNearby = (req, res, next) => {
         }
         let promises = []
         for (let i = 0; i < retUserMatchList.length; i++) {
-            if (!user.matches.includes(retUserMatchList[i].id)) {
+            if (!user.matches.includes(String(retUserMatchList[i].id))) {
                 promises.push(User.findOneAndUpdate({ _id: user._id }, { $push: { matches: retUserMatchList[i].id } }))
             }
-            if (!retUserMatchList[i].matches.includes(user._id)) {
+            if (!retUserMatchList[i].matches.includes(String(user._id))) {
                 promises.push(User.findOneAndUpdate({ _id: retUserMatchList[i].id }, { $push: { matches: user._id } }))
             }
             retUserMatchList[i].distance = distance(userLon, userLat, retUserMatchList[i].longitude, retUserMatchList[i].latitude)

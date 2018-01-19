@@ -21,7 +21,7 @@ router.route('/update-location')
 
 
 router.route('/find-nearby')
-  .put(users.findNearby)
+  .put(users.clearMatches, users.findNearby)
 
 
 /*
