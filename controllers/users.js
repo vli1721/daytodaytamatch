@@ -126,8 +126,13 @@ exports.findNearby = (req, res, next) => {
         // query2 ensures that the target user does not find himself/herself
         let query2 = String(user._id)
 
-        // query3 finds users with same status as target user
-        let query3 = "function () { return this.status.indexOf('" + req.body.status + "') >= 0 }"
+        // query3 finds users with same status as target user if both users chose surprise
+        let query3
+        if (String(req.body.status) === "tree.start") {
+            query3 = "function () { return this.status === '" + req.body.status + "' }"
+        } else { // query3 finds users with status includes status of target user if user does not choose surprise
+            query3 = "function () { return this.status.indexOf('" + req.body.status + "') >= 0 }"
+        }
 
         // if status is exactly "work", query4 finds nearby users that have at least one common class
         let query4
