@@ -124,17 +124,17 @@ exports.findNearby = (req, res, next) => {
         query1 += "return d < 0.8; }"
 
         // query2 ensures that the target user does not find himself/herself
-        let query2 = "" + user._id
+        let query2 = String(user._id)
 
         // query3 finds users with same status as target user
         let query3 = "function () { return this.status.indexOf('" + req.body.status + "') >= 0 }"
 
         // if status is exactly "work", query4 finds nearby users that have at least one common class
         let query4
-        if (String(req.body.status) === "work") {
+        if (String(req.body.status) === "tree.start.work") {
             query4 = "function () { return (('" + user.classes  + "'.split(',')).filter( " + "(element) => this.classes.includes(element) ) ).length > 0 }"
         } // else if status is exactly "eat" or exactly "play", query4 finds nearby users that have at least one common interest
-        else if (String(req.body.status) === "eat" || String(req.body.status) === "play") {
+        else if (String(req.body.status) === "tree.start.eat" || String(req.body.status) === "tree.start.play") {
             query4 = "function () { return (('" + user.interests  + "'.split(',')).filter( " + "(element) => this.interests.includes(element) ) ).length > 0 }"
         } // else make query4 true
         else {
@@ -185,7 +185,7 @@ exports.findNearby = (req, res, next) => {
             if (!retUserMatchList[i].matches.includes(String(user._id))) {
                 promises.push(User.findOneAndUpdate({ _id: retUserMatchList[i].id }, { $push: { matches: user._id } }))
             }
-            retUserMatchList[i].distance = distance(userLon, userLat, retUserMatchList[i].longitude, retUserMatchList[i].latitude)
+            retUserMatchList[i].distance = (parseFloat(distance(userLon, userLat, retUserMatchList[i].longitude, retUserMatchList[i].latitude)) * 0.621371).toFixed(2)
             delete retUserMatchList[i].latitude
             delete retUserMatchList[i].longitude
         }
