@@ -16,10 +16,6 @@ router.route('/users')
   .put(users.updateUser)
   .delete(users.deleteUser)
 
-router.route('/update-location')
-  .put(users.updateUser)
-
-
 router.route('/find-nearby')
   .put(users.clearMatches, users.findNearby)
 
