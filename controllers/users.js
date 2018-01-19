@@ -75,6 +75,31 @@ exports.getUserById = (req, res, next) => {
 };
 
 exports.updateUser = (req, res, next) => {
+    let userClasses = []
+    let updatingClasses = false
+    for (key in req.body) {
+        if (key.indexOf('classes') >= 0) {
+            userClasses.push(req.body[key])
+            delete req.body[key]
+            updatingClasses = true
+        }
+    }
+    if (updatingClasses) {
+        req.body.classes = userClasses
+    }
+    let userInterests = []
+    let updatingInterests = false
+    for (key in req.body) {
+        if (key.indexOf('interests') >= 0) {
+            userInterests.push(req.body[key])
+            delete req.body[key]
+            updatingInterests = true
+        }
+    }
+    if (updatingInterests) {
+        req.body.interests = userInterests
+    }
+    console.log(req.body)
     User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
         if (!user) return res.status(404).send('No user with that ID');
         return res.sendStatus(200);
@@ -104,6 +129,8 @@ exports.findNearby = (req, res, next) => {
     // update status of target user
     req.body.interests = JSON.parse(req.body.interests)
     req.body.classes = JSON.parse(req.body.classes)
+    console.log(req.body.interests)
+    console.log(req.body.classes)
     // update status and location of target user
     User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
         if (!user) return res.status(404).send('Could not find user: invalid id');
