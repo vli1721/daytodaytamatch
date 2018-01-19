@@ -30,6 +30,7 @@ exports.loginUser = (req, res, next) => {
                     token,
                     userId: user._id,
                     classes: user.classes,
+                    interests: user.interests,
                     firstName: user.firstName,
                     lastName: user.lastName,
                     phoneNumber: user.phoneNumber,
