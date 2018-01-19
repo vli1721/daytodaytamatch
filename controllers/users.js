@@ -89,6 +89,7 @@ exports.deleteUser = (req, res, next) => {
 }
 
 exports.clearMatches = (req, res, next) => {
+    console.log('clearing matches')
     User.findOneAndUpdate({ _id: req.body.id }, { matches: []}).then(user => {
         if (!user) return res.status(404).send('Could not find user: invalid id');
         next()
@@ -100,6 +101,8 @@ exports.clearMatches = (req, res, next) => {
 =              Location routes                =
 =============================================*/
 exports.findNearby = (req, res, next) => {
+    // update status of target user
+    console.log('finding nearby')
     // update status and location of target user
     User.findOneAndUpdate({ _id: req.body.id }, req.body).then(user => {
         if (!user) return res.status(404).send('Could not find user: invalid id');
